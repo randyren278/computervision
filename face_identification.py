@@ -38,6 +38,32 @@ def markAttendance(name):
             dtString = now.strftime('%H:%M:%S')
             f.writelines(f'\n{name},{dtString}')
 
+class NameDialog(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Enter Name")
+        self.geometry("300x100")
+        
+        self.label = tk.Label(self, text="Enter name for the captured face:")
+        self.label.pack(pady=10)
+        
+        self.entry = tk.Entry(self)
+        self.entry.pack(pady=5)
+        
+        self.submit_button = tk.Button(self, text="Submit", command=self.on_submit)
+        self.submit_button.pack(pady=5)
+        
+        self.name = None
+        
+    def on_submit(self):
+        self.name = self.entry.get()
+        self.destroy()
+
+def get_name():
+    dialog = NameDialog(root)
+    root.wait_window(dialog)
+    return dialog.name
+
 def save_face():
     global cap, encodeListKnown, classNames
 
@@ -47,8 +73,8 @@ def save_face():
         img = cv2.flip(img, 1)
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        # Prompt the user to enter a name
-        name = simpledialog.askstring("Input", "Enter name for the captured face:")
+        # Get the name using the custom dialog
+        name = get_name()
 
         if name:
             # Save the image to the ImageDatabase folder
