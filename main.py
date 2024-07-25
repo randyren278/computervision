@@ -1,15 +1,12 @@
 import os.path
 import datetime
 import pickle
-
 import tkinter as tk
 import cv2
 from PIL import Image, ImageTk
 import face_recognition
-
 import util
 from test import test
-
 
 class App:
     def __init__(self):
@@ -39,7 +36,8 @@ class App:
 
     def add_webcam(self, label):
         if 'cap' not in self.__dict__:
-            self.cap = cv2.VideoCapture(0)  # Change index to the one that works
+            # Use avfoundation backend for macOS
+            self.cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
 
         self._label = label
         self.process_webcam()
