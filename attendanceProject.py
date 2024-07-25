@@ -51,8 +51,6 @@ while True:
     for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
         y1, x2, y2, x1 = faceLoc
         y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
-
-        # Draw blue box around all detected faces
         cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
         matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
@@ -62,11 +60,9 @@ while True:
         if matches[matchIndex]:
             name = classNames[matchIndex].upper()
 
-            # Draw different green box around recognized face
             cv2.rectangle(img, (x1, y1), (x2, y2), (0, 128, 0), 2)
             cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 128, 0), cv2.FILLED)
 
-            # Change font and put text on recognized face
             font = cv2.FONT_HERSHEY_TRIPLEX
             cv2.putText(img, name, (x1 + 6, y2 - 6), font, 1, (255, 255, 255), 2)
             markAttendance(name)
