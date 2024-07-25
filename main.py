@@ -39,13 +39,17 @@ class App:
 
     def add_webcam(self, label):
         if 'cap' not in self.__dict__:
-            self.cap = cv2.VideoCapture(0)
+            self.cap = cv2.VideoCapture(0)  # Change index to the one that works
 
         self._label = label
         self.process_webcam()
 
     def process_webcam(self):
         ret, frame = self.cap.read()
+
+        if not ret:
+            print("Failed to grab frame")
+            return
 
         self.most_recent_capture_arr = frame
         img_ = cv2.cvtColor(self.most_recent_capture_arr, cv2.COLOR_BGR2RGB)
@@ -57,17 +61,14 @@ class App:
         self._label.after(20, self.process_webcam)
 
     def login(self):
-
         label = test(
-                image=self.most_recent_capture_arr,
-                model_dir='/home/phillip/Desktop/todays_tutorial/27_face_recognition_spoofing/code/face-attendance-system/Silent-Face-Anti-Spoofing/resources/anti_spoof_models',
-                device_id=0
-                )
+            image=self.most_recent_capture_arr,
+            model_dir='/home/phillip/Desktop/todays_tutorial/27_face_recognition_spoofing/code/face-attendance-system/Silent-Face-Anti-Spoofing/resources/anti_spoof_models',
+            device_id=0
+        )
 
         if label == 1:
-
             name = util.recognize(self.most_recent_capture_arr, self.db_dir)
-
             if name in ['unknown_person', 'no_persons_found']:
                 util.msg_box('Ups...', 'Unknown user. Please register new user or try again.')
             else:
@@ -75,22 +76,18 @@ class App:
                 with open(self.log_path, 'a') as f:
                     f.write('{},{},in\n'.format(name, datetime.datetime.now()))
                     f.close()
-
         else:
             util.msg_box('Hey, you are a spoofer!', 'You are fake !')
 
     def logout(self):
-
         label = test(
-                image=self.most_recent_capture_arr,
-                model_dir='/home/phillip/Desktop/todays_tutorial/27_face_recognition_spoofing/code/face-attendance-system/Silent-Face-Anti-Spoofing/resources/anti_spoof_models',
-                device_id=0
-                )
+            image=self.most_recent_capture_arr,
+            model_dir='/home/phillip/Desktop/todays_tutorial/27_face_recognition_spoofing/code/face-attendance-system/Silent-Face-Anti-Spoofing/resources/anti_spoof_models',
+            device_id=0
+        )
 
         if label == 1:
-
             name = util.recognize(self.most_recent_capture_arr, self.db_dir)
-
             if name in ['unknown_person', 'no_persons_found']:
                 util.msg_box('Ups...', 'Unknown user. Please register new user or try again.')
             else:
@@ -98,10 +95,8 @@ class App:
                 with open(self.log_path, 'a') as f:
                     f.write('{},{},out\n'.format(name, datetime.datetime.now()))
                     f.close()
-
         else:
             util.msg_box('Hey, you are a spoofer!', 'You are fake !')
-
 
     def register_new_user(self):
         self.register_new_user_window = tk.Toplevel(self.main_window)
@@ -131,7 +126,6 @@ class App:
         imgtk = ImageTk.PhotoImage(image=self.most_recent_capture_pil)
         label.imgtk = imgtk
         label.configure(image=imgtk)
-
         self.register_new_user_capture = self.most_recent_capture_arr.copy()
 
     def start(self):
@@ -139,16 +133,15 @@ class App:
 
     def accept_register_new_user(self):
         name = self.entry_text_register_new_user.get(1.0, "end-1c")
+        
+        # Ensure the image is in RGB format
+        img_rgb = cv2.cvtColor(self.register_new_user_capture, cv2.COLOR_BGR2RGB)
 
-        embeddings = face_recognition.face_encodings(self.register_new_user_capture)[0]
-
+        embeddings = face_recognition.face_encodings(img_rgb)[0]
         file = open(os.path.join(self.db_dir, '{}.pickle'.format(name)), 'wb')
         pickle.dump(embeddings, file)
-
         util.msg_box('Success!', 'User was registered successfully !')
-
         self.register_new_user_window.destroy()
-
 
 if __name__ == "__main__":
     app = App()
