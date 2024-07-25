@@ -102,48 +102,50 @@ save_button.pack(side=tk.TOP, anchor=tk.NE)
 # Initialize the video capture
 cap = cv2.VideoCapture(0)
 
-while True:
+def update_frame():
     success, img = cap.read()
-    img = cv2.flip(img, 1)  # Invert the camera display
-    imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
-    imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
+    if success:
+        img = cv2.flip(img, 1)  # Invert the camera display
+        imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+        imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
 
-    facesCurFrame = face_recognition.face_locations(imgS)
-    encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
+        facesCurFrame = face_recognition.face_locations(imgS)
+        encodesCurFrame = face_recognition.face_encodings(imgS, facesCurFrame)
 
-    for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
-        y1, x2, y2, x1 = faceLoc
-        y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+        for encodeFace, faceLoc in zip(encodesCurFrame, facesCurFrame):
+            y1, x2, y2, x1 = faceLoc
+            y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
 
-        # Draw blue box around all detected faces
-        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            # Draw blue box around all detected faces
+            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
-        matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
-        faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
-        matchIndex = np.argmin(faceDis)
+            matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
+            faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
+            matchIndex = np.argmin(faceDis)
 
-        if matches[matchIndex]:
-            name = classNames[matchIndex].upper()
+            if matches[matchIndex]:
+                name = classNames[matchIndex].upper()
 
-            # Draw different green box around recognized face
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 128, 0), 2)
-            cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 128, 0), cv2.FILLED)
+                # Draw different green box around recognized face
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 128, 0), 2)
+                cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 128, 0), cv2.FILLED)
 
-            # Change font and put text on recognized face
-            font = cv2.FONT_HERSHEY_TRIPLEX
-            cv2.putText(img, name, (x1 + 6, y2 - 6), font, 1, (255, 255, 255), 2)
-            markAttendance(name)
+                # Change font and put text on recognized face
+                font = cv2.FONT_HERSHEY_TRIPLEX
+                cv2.putText(img, name, (x1 + 6, y2 - 6), font, 1, (255, 255, 255), 2)
+                markAttendance(name)
 
-    # Display the resulting frame
-    cv2.imshow('Webcam', img)
+        # Display the resulting frame
+        cv2.imshow('Webcam', img)
 
-    # Process GUI events
-    root.update()
+    root.after(10, update_frame)  # Schedule the function to be called again after 10 ms
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+# Start updating frames
+update_frame()
+
+# Start the tkinter main loop
+root.mainloop()
 
 # Release the video capture and destroy all OpenCV windows
 cap.release()
 cv2.destroyAllWindows()
-root.destroy()
