@@ -47,7 +47,7 @@ class NameDialog(tk.Toplevel):
         self.label = tk.Label(self, text="Enter name for the captured face:")
         self.label.pack(pady=10)
         
-        self.entry = tk.Entry(self)
+        self.entry = tk.Entry(self, fg='white', bg='black')  # Set text color to white and background to black
         self.entry.pack(pady=5)
         
         self.submit_button = tk.Button(self, text="Submit", command=self.on_submit)
