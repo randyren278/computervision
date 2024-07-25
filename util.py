@@ -37,7 +37,6 @@ def msg_box(title, description):
     messagebox.showinfo(title, description)
 
 def recognize(img, db_path):
-    # Ensure the image is in RGB format
     if img is None:
         return 'no_persons_found'
 
@@ -53,10 +52,8 @@ def recognize(img, db_path):
     j = 0
     while not match and j < len(db_dir):
         path_ = os.path.join(db_path, db_dir[j])
-
         with open(path_, 'rb') as file:
             embeddings = pickle.load(file)
-
         match = face_recognition.compare_faces([embeddings], embeddings_unknown)[0]
         j += 1
 

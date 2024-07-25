@@ -1,4 +1,4 @@
-import os.path
+import os
 import datetime
 import pickle
 import tkinter as tk
@@ -6,27 +6,24 @@ import cv2
 from PIL import Image, ImageTk
 import face_recognition
 import util
-from test import test
 
 class App:
     def __init__(self):
         self.main_window = tk.Tk()
         self.main_window.geometry("1200x520+350+100")
+        self.main_window.title("Face Recognition System")
 
-        self.login_button_main_window = util.get_button(self.main_window, 'login', 'green', self.login)
+        self.login_button_main_window = util.get_button(self.main_window, 'Login', 'green', self.login)
         self.login_button_main_window.place(x=750, y=200)
 
-        self.logout_button_main_window = util.get_button(self.main_window, 'logout', 'red', self.logout)
+        self.logout_button_main_window = util.get_button(self.main_window, 'Logout', 'red', self.logout)
         self.logout_button_main_window.place(x=750, y=300)
 
-        self.register_new_user_button_main_window = util.get_button(self.main_window, 'register new user', 'gray',
-                                                                    self.register_new_user, fg='black')
+        self.register_new_user_button_main_window = util.get_button(self.main_window, 'Register New User', 'gray', self.register_new_user, fg='black')
         self.register_new_user_button_main_window.place(x=750, y=400)
 
         self.webcam_label = util.get_img_label(self.main_window)
         self.webcam_label.place(x=10, y=0, width=700, height=500)
-
-        self.add_webcam(self.webcam_label)
 
         self.db_dir = './db'
         if not os.path.exists(self.db_dir):
@@ -34,11 +31,16 @@ class App:
 
         self.log_path = './log.txt'
 
-    def add_webcam(self, label):
-        if 'cap' not in self.__dict__:
-            self.cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)  # Use AVFoundation for macOS
+        self.cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
+        if not self.cap.isOpened():
+            print("Failed to open webcam.")
+            return
 
-        self._label = label
+        self.most_recent_capture_pil = None
+        self.most_recent_capture_arr = None
+        self.register_new_user_capture = None
+        self.entry_text_register_new_user = None
+
         self.process_webcam()
 
     def process_webcam(self):
@@ -48,52 +50,34 @@ class App:
             self.main_window.after(20, self.process_webcam)
             return
 
-        self.most_recent_capture_arr = frame
-        img_ = cv2.cvtColor(self.most_recent_capture_arr, cv2.COLOR_BGR2RGB)
-        self.most_recent_capture_pil = Image.fromarray(img_)
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        self.most_recent_capture_arr = frame_rgb
+        self.most_recent_capture_pil = Image.fromarray(frame_rgb)
         imgtk = ImageTk.PhotoImage(image=self.most_recent_capture_pil)
-        self._label.imgtk = imgtk
-        self._label.configure(image=imgtk)
+        self.webcam_label.imgtk = imgtk
+        self.webcam_label.configure(image=imgtk)
 
-        self._label.after(20, self.process_webcam)
+        self.main_window.after(20, self.process_webcam)
 
     def login(self):
-        label = test(
-                image=self.most_recent_capture_arr,
-                model_dir='/path/to/your/model/dir',  # Update the path accordingly
-                device_id=0
-                )
-
-        if label == 1:
+        if self.most_recent_capture_arr is not None:
             name = util.recognize(self.most_recent_capture_arr, self.db_dir)
             if name in ['unknown_person', 'no_persons_found']:
-                util.msg_box('Ups...', 'Unknown user. Please register new user or try again.')
+                util.msg_box('Oops...', 'Unknown user. Please register new user or try again.')
             else:
-                util.msg_box('Welcome back !', 'Welcome, {}.'.format(name))
+                util.msg_box('Welcome back!', f'Welcome, {name}.')
                 with open(self.log_path, 'a') as f:
-                    f.write('{},{},in\n'.format(name, datetime.datetime.now()))
-                    f.close()
-        else:
-            util.msg_box('Hey, you are a spoofer!', 'You are fake !')
+                    f.write(f'{name},{datetime.datetime.now()},in\n')
 
     def logout(self):
-        label = test(
-                image=self.most_recent_capture_arr,
-                model_dir='/path/to/your/model/dir',  # Update the path accordingly
-                device_id=0
-                )
-
-        if label == 1:
+        if self.most_recent_capture_arr is not None:
             name = util.recognize(self.most_recent_capture_arr, self.db_dir)
             if name in ['unknown_person', 'no_persons_found']:
-                util.msg_box('Ups...', 'Unknown user. Please register new user or try again.')
+                util.msg_box('Oops...', 'Unknown user. Please register new user or try again.')
             else:
-                util.msg_box('Hasta la vista !', 'Goodbye, {}.'.format(name))
+                util.msg_box('Goodbye!', f'Goodbye, {name}.')
                 with open(self.log_path, 'a') as f:
-                    f.write('{},{},out\n'.format(name, datetime.datetime.now()))
-                    f.close()
-        else:
-            util.msg_box('Hey, you are a spoofer!', 'You are fake !')
+                    f.write(f'{name},{datetime.datetime.now()},out\n')
 
     def register_new_user(self):
         self.register_new_user_window = tk.Toplevel(self.main_window)
@@ -120,18 +104,30 @@ class App:
         self.register_new_user_window.destroy()
 
     def add_img_to_label(self, label):
-        imgtk = ImageTk.PhotoImage(image=self.most_recent_capture_pil)
-        label.imgtk = imgtk
-        label.configure(image=imgtk)
-        self.register_new_user_capture = self.most_recent_capture_arr.copy()
+        if self.most_recent_capture_pil:
+            imgtk = ImageTk.PhotoImage(image=self.most_recent_capture_pil)
+            label.imgtk = imgtk
+            label.configure(image=imgtk)
+            self.register_new_user_capture = self.most_recent_capture_arr.copy()
 
     def accept_register_new_user(self):
-        name = self.entry_text_register_new_user.get(1.0, "end-1c")
-        embeddings = face_recognition.face_encodings(self.register_new_user_capture)[0]
-        file = open(os.path.join(self.db_dir, '{}.pickle'.format(name)), 'wb')
-        pickle.dump(embeddings, file)
-        util.msg_box('Success!', 'User was registered successfully !')
-        self.register_new_user_window.destroy()
+        name = self.entry_text_register_new_user.get(1.0, "end-1c").strip()
+        if not name:
+            util.msg_box('Error', 'Please enter a valid username.')
+            return
+
+        if self.register_new_user_capture is not None:
+            img_rgb = self.register_new_user_capture
+            print("Register new user image shape:", img_rgb.shape)
+
+            try:
+                embeddings = face_recognition.face_encodings(img_rgb)[0]
+                with open(os.path.join(self.db_dir, f'{name}.pickle'), 'wb') as file:
+                    pickle.dump(embeddings, file)
+                util.msg_box('Success!', 'User was registered successfully!')
+                self.register_new_user_window.destroy()
+            except IndexError:
+                util.msg_box('Error', 'No face detected. Please try again.')
 
     def start(self):
         self.main_window.mainloop()
