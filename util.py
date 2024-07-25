@@ -2,8 +2,7 @@ import os
 import pickle
 import tkinter as tk
 from tkinter import messagebox
-import face_recognition 
-import cv2
+import face_recognition
 
 def get_button(window, text, color, command, fg='white'):
     button = tk.Button(
@@ -41,19 +40,6 @@ def recognize(img, db_path):
     # Ensure the image is in RGB format
     if img is None:
         return 'no_persons_found'
-
-    print("Image shape before conversion:", img.shape)
-    if len(img.shape) == 2 or img.shape[2] == 1:
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-    elif img.shape[2] == 4:
-        img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
-    elif img.shape[2] == 3:
-        # Image is already in RGB format
-        pass
-    else:
-        print("Unsupported image shape:", img.shape)
-        return 'no_persons_found'
-    print("Image shape after conversion:", img.shape)
 
     embeddings_unknown = face_recognition.face_encodings(img)
     if len(embeddings_unknown) == 0:
