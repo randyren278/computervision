@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import tkinter as tk
 from tkinter import simpledialog
+from tkinter import messagebox
 from PIL import Image, ImageTk
 
 path = 'ImageDatabase'
