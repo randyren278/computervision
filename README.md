@@ -79,5 +79,8 @@ NumPy is used for numerical operations, particularly handling arrays and matrice
 1. **Install the required libraries:**
     pip install -r requirements.txt
 
-2. **Run the app:**
-    python main.py
+2. **Install other dependencies:**
+   pip install opencv-python numpy face_recognition pillow
+
+4. **Run the app:**
+    python face_identification.py
