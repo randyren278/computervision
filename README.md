@@ -14,8 +14,6 @@ This project is a Facial Analysis Attendance application that utilizes advanced 
 ## Gallery
 ![alt text](<distance metric.jpeg>)
 Shown on the left is the intial image and on the right the test image along with what's known as the distance metric (the larger the value, the less similar the images).
-![alt text](<no tracking.png>)
-Show on the left is an example of the algorithim detecing a face but not finding it in the database. On the right is an example of a face the algorithim found within its database. Also pictured, is the save face button in the top left corner.
 
 
 ## Technologies Used
